@@ -47,10 +47,10 @@ jobs:
     - name: Build
       run: cargo apk build --target aarch64-linux-android --release
     
-    - name: Upload apk
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: my-artifact
+        name: artifacts
         path: target/release/apk/memory-game.apk
 
     # - name: Run tests
