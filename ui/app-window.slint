@@ -1,92 +1,61 @@
-struct TileData {
-    image: image,
-    image_visible:bool,
-    solved:bool,
-}
-
-component MemoryTile inherits Rectangle {
-    callback clicked;
-    in property <bool> open_curtain;
-    in property <bool> solved;
-    in property <image> icon;
-
-    width: 64px;
-    height: 64px;
-    background: solved ? #34CE57 : #3960D5;
-    animate background { duration: 800ms; }
-    Image {
-        source: icon;
-        width: parent.width;
-        height: parent.height;
-    }
-
-    // Left curtain
-    Rectangle {
-        background: #193076;
-        x: 0;
-        width: open_curtain ? 0 : parent.width / 2;
-        height: parent.height;
-        animate width {
-            duration: 250ms;
-            easing: ease-in;
-        }
-    }
-
-    // Right curtain
-    Rectangle {
-        background: #193076;
-        x: open_curtain ? parent.width : (parent.width / 2);
-        width: open_curtain ? 0px : (parent.width / 2);
-        height: parent.height;
-        animate width {
-            duration: 250ms;
-            easing: ease-in;
-        }
-        animate x {
-            duration: 250ms;
-            easing: ease-in;
-        }
-    }
-
-    TouchArea {
-        clicked => {
-            root.clicked();
-        }
-    }
-}
+import { Button } from "std-widgets.slint";
+import { MemoryTileContainer } from "components/memory-tile-container.slint";
+import { MemoryTile,TileData } from "components/memory-tile.slint";
 
 export component MainWindow inherits Window {
-    width: 326px;
-    height: 326px;
+    width : 300px;
+    height:300px;
+    public function set_memoryTiles(memory_tiles: [TileData]) {
+        memoryTileContainer.memory_tiles = memory_tiles;
+    }
+
+    public function set_disable_tiles(x: bool) {
+        memoryTileContainer.disable_tiles = x;
+    }
+
+    public function get_memory_tiles() -> [TileData] {
+        memoryTileContainer.memory_tiles;
+    }
+
+    public function stop_timer() {
+        timer.running = false;
+    }
 
     callback check_if_pair_solved();
-    in property <bool> disable_tiles;
 
-    in property <[TileData]> memory_tiles: [
-        { image: @image-url("icons/at.png") },
-        { image: @image-url("icons/balance-scale.png") },
-        { image: @image-url("icons/bicycle.png") },
-        { image: @image-url("icons/bus.png") },
-        { image: @image-url("icons/cloud.png") },
-        { image: @image-url("icons/cogs.png") },
-        { image: @image-url("icons/motorcycle.png") },
-        { image: @image-url("icons/video.png") },
-    ];
+    VerticalLayout {
+        alignment: center;
+        padding-bottom: 5px;
+        memoryTileContainer := MemoryTileContainer {
+            check_if_pair_solved => {
+                check_if_pair_solved()
+            }
+        }
 
-    for tile[i] in memory_tiles: MemoryTile {
-        x: mod(i, 4) * 74px;
-        y: floor(i / 4) * 74px;
-        width: 64px;
-        height: 64px;
-        icon: tile.image;
-        open_curtain: tile.image_visible || tile.solved;
-        // propagate the solved status from the model to the tile
-        solved: tile.solved;
-        clicked => {
-            // new:
-            if (!root.disable_tiles) {
-                tile.image_visible = true;
-                root.check_if_pair_solved();
+        property <int> total_spend_time: 0;
+        timer := Timer {
+            interval: 1s;
+            running: false;
+            triggered => {
+                total_spend_time += 1
+            }
+        }
+
+        Text {
+            text: "Total Spend Time: " + total_spend_time + "s";
+            x: 5px;
+        }
+
+        Button {
+            text: "Start";
+            width: parent.width - 10px;
+            x: 5px;
+            clicked => {
+                if (timer.running) {
+                    timer.running = false;
+                } else {
+                    timer.running = true;
+                }
             }
         }
     }

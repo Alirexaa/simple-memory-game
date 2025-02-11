@@ -1,0 +1,46 @@
+import { MemoryTile, TileData } from "memory-tile.slint";
+
+export component MemoryTileContainer inherits Window {
+    width: 300px; // Adjust as needed
+    height: 300px; // Adjust as needed
+
+    callback check_if_pair_solved();
+    in property <bool> disable_tiles;
+    in property <[TileData]> memory_tiles: [
+        { image: @image-url("../icons/at.png") },
+        { image: @image-url("../icons/balance-scale.png") },
+        { image: @image-url("../icons/bicycle.png") },  
+        { image: @image-url("../icons/bus.png") },
+        { image: @image-url("../icons/cloud.png") },
+        { image: @image-url("../icons/cogs.png") },
+        { image: @image-url("../icons/motorcycle.png") },
+        { image: @image-url("../icons/video.png") },
+    ];
+
+    // Tile and grid settings
+    property <length> tile_size: 64px;
+    property <length> spacing: 10px;
+    property <int> columns: 4;
+    property <int> rows: ceil(memory_tiles.length / columns);
+    property <length> total_width: (columns * tile_size / 1px + (columns - 1) * spacing / 1px) * 1px;
+    property <length> total_height: (rows * tile_size / 1px + (rows - 1) * spacing / 1px) * 1px;
+    
+    // Centering offset
+    property <length> offset_x: (self.width - total_width) / 2;
+    property <length> offset_y: (self.height - total_height) / 2;
+    for tile[i] in memory_tiles: MemoryTile {
+        x: offset_x + mod(i, columns) * (tile_size + spacing);
+        y: offset_y + floor(i / columns) * (tile_size + spacing);
+        width: tile_size;
+        height: tile_size;
+        icon: tile.image;
+        open_curtain: tile.image_visible || tile.solved;
+        solved: tile.solved;
+        clicked => {
+            if (!root.disable_tiles) {
+                tile.image_visible = true;
+                root.check_if_pair_solved();
+            }
+        }
+    }
+}

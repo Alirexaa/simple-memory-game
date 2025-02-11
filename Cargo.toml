@@ -7,7 +7,26 @@ edition = "2021"
 
 [dependencies]
 rand = "0.9"
-slint = "1.8.0"
+slint = { version = "1.9.2", features = ["backend-android-activity-06"] }
 
 [build-dependencies]
-slint-build = "1.8.0"
+slint-build = "1.9.2"
+
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.android.sdk]
+min_sdk_version = 23
+target_sdk_version = 35
+max_sdk_version = 35
+
+[package.metadata.android.signing.release]
+path = "my-release-key.keystore"
+keystore_password = "123456"
+
+[profile.dev]
+opt-level = 3
+# Disabling debug info speeds up builds a bunch,
+# and we don't rely on it for debugging that much.
+debug = 0

@@ -2,22 +2,29 @@ use slint::{ComponentHandle, Model};
 
 slint::include_modules!();
 
-fn main() -> Result<(), slint::PlatformError> {
+#[no_mangle]
+fn android_main(app: slint::android::AndroidApp) {
+    slint::android::init(app).unwrap();
+
+    init_app().unwrap();
+}
+
+fn init_app() -> Result<(), slint::PlatformError> {
     let main_window = MainWindow::new()?;
 
     // Fetch the tiles from the model
-    let mut tiles: Vec<TileData> = main_window.get_memory_tiles().iter().collect();
+    let mut tiles: Vec<TileData> = main_window.invoke_get_memory_tiles().iter().collect();
     // Duplicate them to ensure that we have pairs
     tiles.extend(tiles.clone());
 
     // Randomly mix the tiles
     use rand::seq::SliceRandom;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     tiles.shuffle(&mut rng);
 
     // Assign the shuffled Vec to the model property
     let tiles_model = std::rc::Rc::new(slint::VecModel::from(tiles));
-    main_window.set_memory_tiles(tiles_model.clone().into());
+    main_window.invoke_set_memoryTiles(tiles_model.clone().into());
 
     let main_window_weak = main_window.as_weak();
     main_window.on_check_if_pair_solved(move || {
@@ -37,16 +44,20 @@ fn main() -> Result<(), slint::PlatformError> {
                 tiles_model.set_row_data(t2_idx, t2);
             } else {
                 let main_window = main_window_weak.unwrap();
-                main_window.set_disable_tiles(true);
+                main_window.invoke_set_disable_tiles(true);
                 let tiles_model = tiles_model.clone();
                 slint::Timer::single_shot(std::time::Duration::from_secs(1), move || {
-                    main_window.set_disable_tiles(false);
+                    main_window.invoke_set_disable_tiles(false);
                     t1.image_visible = false;
                     tiles_model.set_row_data(t1_idx, t1);
                     t2.image_visible = false;
                     tiles_model.set_row_data(t2_idx, t2);
                 });
             }
+        }
+
+        if tiles_model.iter().all(|tile| tile.solved) {
+            main_window_weak.unwrap().invoke_stop_timer();
         }
     });
     main_window.run()
