@@ -48,10 +48,11 @@ jobs:
       run: cargo apk build --target aarch64-linux-android --release
     
     - name: Upload apk
-    - uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4
       with:
         name: my-artifact
         path: target/release/apk/memory-game.apk
+
     # - name: Run tests
     #   # Profile "ci" is configured in .config/nextest.toml
     #   run: cargo nextest run --workspace --profile ci
