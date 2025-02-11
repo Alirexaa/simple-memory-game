@@ -16,9 +16,25 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
 
+    
     steps:
-    #- name: Install minimal stable
-    #  uses: dtolnay/rust-toolchain@stable
+    - name: Install minimal stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: aarch64-linux-android
+
+    - name: Set up JDK 23
+      uses: taiki-e/install-action@nextest
+      with:
+        java-version: '23'
+        distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3    
+    
+    - name: Install cargo-apk
+      run: cargo install cargo-apk
+
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
     #- name: Install Protoc
